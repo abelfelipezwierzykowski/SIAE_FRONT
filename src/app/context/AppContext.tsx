@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { User, AdoptionRequest } from '../data/animals';
+import type { User, AdoptionRequest } from '../data/animals';
 
 interface AppContextType {
   user: User | null;

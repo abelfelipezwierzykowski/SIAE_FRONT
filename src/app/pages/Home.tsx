@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { mockAnimals, Animal } from '../data/animals';
+import { mockAnimals } from '../data/animals';
+import type { Animal } from '../data/animals';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';

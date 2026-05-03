@@ -14,6 +14,25 @@ export interface Animal {
   neutered: boolean;
 }
 
+export interface AdoptionRequest {
+  id: string;
+  animalId: string;
+  animalName: string;
+  animalPhoto: string;
+  status: 'pending' | 'approved' | 'rejected';
+  date: string;
+  interviewDate?: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  adoptionHistory: AdoptionRequest[];
+}
+
 export const mockAnimals: Animal[] = [
   {
     id: '1',
@@ -159,22 +178,3 @@ export const mockAnimals: Animal[] = [
     neutered: true,
   },
 ];
-
-export interface AdoptionRequest {
-  id: string;
-  animalId: string;
-  animalName: string;
-  animalPhoto: string;
-  status: 'pending' | 'approved' | 'rejected';
-  date: string;
-  interviewDate?: string;
-}
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-  adoptionHistory: AdoptionRequest[];
-}
