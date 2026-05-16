@@ -5,6 +5,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useApp } from '../context/AppContext';
 import { PawPrint } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function Register() {
   const [name, setName] = useState('');
@@ -12,13 +13,21 @@ export function Register() {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { register } = useApp();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (register(name, email, password, phone, address)) {
+    try {
+      setIsLoading(true);
+      await register(name, email, password, phone, address);
+      toast.success('Cadastro realizado com sucesso!');
       navigate('/');
+    } catch (error) {
+      toast.error('Erro ao fazer cadastro.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,8 +104,8 @@ export function Register() {
               />
             </div>
 
-            <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
-              Cadastrar
+            <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
+              {isLoading ? 'Cadastrando...' : 'Cadastrar'}
             </Button>
           </form>
 

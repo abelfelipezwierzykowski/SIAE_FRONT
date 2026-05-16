@@ -5,17 +5,26 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { useApp } from '../context/AppContext';
 import { PawPrint } from 'lucide-react';
+import { toast } from 'sonner';
 
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useApp();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (login(email, password)) {
+    try {
+      setIsLoading(true);
+      await login(email, password);
+      toast.success('Login realizado com sucesso!');
       navigate('/');
+    } catch (error) {
+      toast.error('Erro ao fazer login. Verifique suas credenciais.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,8 +65,8 @@ export function Login() {
               />
             </div>
 
-            <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
-              Entrar
+            <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
 

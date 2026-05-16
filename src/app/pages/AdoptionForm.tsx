@@ -1,20 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockAnimals } from '../data/animals';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { AnimalsService } from '../services/animals.service';
+import { AdoptionsService } from '../services/adoptions.service';
+import type { Animal } from '../data/animals';
 import { toast } from 'sonner';
 
 export function AdoptionForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { submitAdoptionRequest, user } = useApp();
-  const animal = mockAnimals.find((a) => a.id === id);
+  const { user } = useApp();
+  const [animal, setAnimal] = useState<Animal | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [hasExperience, setHasExperience] = useState('');
   const [housingType, setHousingType] = useState('');
@@ -22,24 +26,67 @@ export function AdoptionForm() {
   const [otherPets, setOtherPets] = useState('');
   const [motivation, setMotivation] = useState('');
 
+  useEffect(() => {
+    if (id) {
+      loadAnimal();
+    }
+  }, [id]);
+
+  const loadAnimal = async () => {
+    try {
+      setIsLoading(true);
+      const data = await AnimalsService.getById(id!);
+      setAnimal(data);
+    } catch (error) {
+      toast.error('Animal não encontrado');
+      navigate(-1);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+      </div>
+    );
+  }
+
   if (!animal) {
     return <div className="p-4">Animal não encontrado</div>;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    try {
+      setIsSubmitting(true);
+      await AdoptionsService.create({
+        userId: user.id,
+        animalId: animal.id,
+        motivation,
+        hasExperience: hasExperience === 'yes',
+        housingType: housingType as 'house' | 'apartment',
+        hasYard: hasYard === 'yes',
+        otherPets: otherPets === 'yes',
+      });
 
-    submitAdoptionRequest({
-      animalId: animal.id,
-      animalName: animal.name,
-      animalPhoto: animal.photos[0],
-    });
+      toast.success('Solicitação enviada com sucesso!', {
+        description: 'Entraremos em contato em breve para agendar uma entrevista.',
+      });
 
-    toast.success('Solicitação enviada com sucesso!', {
-      description: 'Entraremos em contato em breve para agendar uma entrevista.',
-    });
-
-    navigate('/profile');
+      navigate('/profile');
+    } catch (error) {
+      toast.error('Erro ao enviar solicitação');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -146,8 +193,8 @@ export function AdoptionForm() {
           </div>
 
           <div className="pt-4">
-            <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600">
-              Enviar Solicitação
+            <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isSubmitting}>
+              {isSubmitting ? 'Enviando...' : 'Enviar Solicitação'}
             </Button>
           </div>
         </form>
